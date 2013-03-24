@@ -1,0 +1,20 @@
+Index: setup.py
+===================================================================
+--- setup.py	(revision 75215)
++++ setup.py	(working copy)
+@@ -1156,6 +1156,7 @@
+         self.detect_tkinter(inc_dirs, lib_dirs)
+ 
+     def detect_tkinter_darwin(self, inc_dirs, lib_dirs):
++        return 1
+         # The _tkinter module, using frameworks. Since frameworks are quite
+         # different the UNIX search logic is not sharable.
+         from os.path import join, exists
+@@ -1210,6 +1211,7 @@
+ 
+ 
+     def detect_tkinter(self, inc_dirs, lib_dirs):
++        return
+         # The _tkinter module.
+ 
+         # Rather than complicate the code below, detecting and building

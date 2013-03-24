@@ -1,0 +1,65 @@
+Index: configure
+===================================================================
+--- configure	(revision 75215)
++++ configure	(working copy)
+@@ -4047,6 +4047,11 @@
+ 	  BLDLIBRARY='-L. -lpython$(VERSION)'
+ 	  RUNSHARED=DLL_PATH=`pwd`:${DLL_PATH:-/atheos/sys/libs:/atheos/autolnk/lib}
+ 	  ;;
++    Darwin*)
++    LDLIBRARY='libpython$(VERSION).dylib'
++    BLDLIBRARY='-L. -lpython$(VERSION)'
++    RUNSHARED='DYLD_LIBRARY_PATH=`pwd`:${DYLD_LIBRARY_PATH}'
++    ;;
+   esac
+ else # shared is disabled
+   case $ac_sys_system in
+Index: configure.in
+===================================================================
+--- configure.in	(revision 75215)
++++ configure.in	(working copy)
+@@ -670,6 +670,11 @@
+ 	  BLDLIBRARY='-L. -lpython$(VERSION)'
+ 	  RUNSHARED=DLL_PATH=`pwd`:${DLL_PATH:-/atheos/sys/libs:/atheos/autolnk/lib}
+ 	  ;;
++ 	Darwin*)
++	  LDLIBRARY='libpython$(VERSION).dylib'
++	  BLDLIBRARY='-L. -lpython$(VERSION)'
++	  RUNSHARED=DYLD_LIBRARY_PATH="`pwd`:${DYLD_LIBRARY_PATH}"
++	  ;; 
+   esac
+ else # shared is disabled
+   case $ac_sys_system in
+Index: Makefile.pre.in
+===================================================================
+--- Makefile.pre.in	(revision 75215)
++++ Makefile.pre.in	(working copy)
+@@ -365,6 +365,9 @@
+ 	$(AR) cr $@ $(MODOBJS)
+ 	$(RANLIB) $@
+ 
++libpython$(VERSION).dylib: $(LIBRARY_OBJS)
++	$(CC) -dynamiclib -Wl,-single_module $(LDFLAGS) -undefined dynamic_lookup -Wl,-install_name,$(prefix)/lib/libpython$(VERSION).dylib -Wl,-compatibility_version,$(VERSION) -Wl,-current_version,$(VERSION) -o $@ $(LIBRARY_OBJS) $(SHLIBS) $(LIBC) $(LIBM) $(LDLAST);
++
+ libpython$(VERSION).so: $(LIBRARY_OBJS)
+ 	if test $(INSTSONAME) != $(LDLIBRARY); then \
+ 		$(LDSHARED) $(LDFLAGS) -Wl,-h$(INSTSONAME) -o $(INSTSONAME) $(LIBRARY_OBJS) $(SHLIBS) $(LIBC) $(LIBM) $(LDLAST); \
+@@ -674,13 +677,13 @@
+ 		fi; \
+ 	done
+ 	$(INSTALL_PROGRAM) $(BUILDPYTHON) $(DESTDIR)$(BINDIR)/python$(VERSION)$(EXE)
+-	if test -f libpython$(VERSION)$(SO); then \
++	if test -f $(LDLIBRARY); then \
+ 		if test "$(SO)" = .dll; then \
+-			$(INSTALL_SHARED) libpython$(VERSION)$(SO) $(DESTDIR)$(BINDIR); \
++			$(INSTALL_SHARED) $(LDLIBRARY) $(DESTDIR)$(BINDIR); \
+ 		else \
+-			$(INSTALL_SHARED) libpython$(VERSION)$(SO) $(DESTDIR)$(LIBDIR)/$(INSTSONAME); \
+-			if test libpython$(VERSION)$(SO) != $(INSTSONAME); then \
+-				(cd $(DESTDIR)$(LIBDIR); $(LN) -sf $(INSTSONAME) libpython$(VERSION)$(SO)); \
++			$(INSTALL_SHARED) $(LDLIBRARY) $(DESTDIR)$(LIBDIR)/$(INSTSONAME); \
++			if test $(LDLIBRARY) != $(INSTSONAME); then \
++				(cd $(DESTDIR)$(LIBDIR); $(LN) -sf $(INSTSONAME) $(LDLIBRARY)) \
+ 			fi \
+ 		fi; \
+ 	else	true; \

@@ -1,0 +1,18 @@
+Index: configure.in
+===================================================================
+--- configure.in	(revision 75215)
++++ configure.in	(working copy)
+@@ -819,7 +819,12 @@
+ 	    ;;
+ 	# is there any other compiler on Darwin besides gcc?
+ 	Darwin*)
+-	    BASECFLAGS="$BASECFLAGS -Wno-long-double -no-cpp-precomp -mno-fused-madd"
++	    if [[ `/usr/bin/arch` = 'ppc' ]]
++        then
++          BASECFLAGS="$BASECFLAGS  -no-cpp-precomp -mno-fused-madd -fno-common"
++        else
++          BASECFLAGS="$BASECFLAGS  -no-cpp-precomp -fno-common"
++        fi
+ 	    if test "${enable_universalsdk}"; then
+ 		BASECFLAGS="-arch ppc -arch i386 -isysroot ${UNIVERSALSDK} ${BASECFLAGS}"
+ 	    fi

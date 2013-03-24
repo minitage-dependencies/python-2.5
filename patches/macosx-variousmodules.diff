@@ -1,0 +1,85 @@
+Index: Include/pyport.h
+===================================================================
+--- Include/pyport.h	(revision 75235)
++++ Include/pyport.h	(working copy)
+@@ -544,6 +544,7 @@
+ /* BSDI does not supply a prototype for the 'openpty' and 'forkpty'
+    functions, even though they are included in libutil. */
+ #include <termios.h>
++struct winsize;
+ extern int openpty(int *, int *, char *, struct termios *, struct winsize *);
+ extern int forkpty(int *, char *, struct termios *, struct winsize *);
+ #endif /* !defined(HAVE_PTY_H) && !defined(HAVE_LIBUTIL_H) */
+Index: Mac/Modules/MacOS.c
+===================================================================
+--- Mac/Modules/MacOS.c	(revision 75235)
++++ Mac/Modules/MacOS.c	(working copy)
+@@ -40,13 +40,14 @@
+ 
+ typedef struct {
+ 	PyObject_HEAD
+-	short fRefNum;
++   FSIORefNum fRefNum;
+ 	int isclosed;
+ } rfobject;
+ 
+ static PyTypeObject Rftype;
+ 
+ 
++#if 0
+ 
+ /* ---------------------------------------------------------------- */
+ 
+@@ -550,8 +551,9 @@
+ 	
+ 	if ( (fp = newrfobject()) == NULL )
+ 		return NULL;
+-		
++	/*	
+ 	err = HOpenRF(fss.vRefNum, fss.parID, fss.name, permission, &fp->fRefNum);
++    */
+ 	
+ 	if ( err == fnfErr ) {
+ 		/* In stead of doing complicated things here to get creator/type
+@@ -572,7 +574,9 @@
+ 			return NULL;
+ 		}
+ 		fclose(tfp);
++        /*
+ 		err = HOpenRF(fss.vRefNum, fss.parID, fss.name, permission, &fp->fRefNum);
++    */
+ 	}
+ 	if ( err ) {
+ 		Py_DECREF(fp);
+@@ -583,8 +587,10 @@
+ 	return (PyObject *)fp;
+ }
+ 
++#endif
+ 
+ static PyMethodDef MacOS_Methods[] = {
++#if 0
+ 	{"GetCreatorAndType",		MacOS_GetCreatorAndType, 1,	getcrtp_doc},
+ 	{"SetCreatorAndType",		MacOS_SetCreatorAndType, 1,	setcrtp_doc},
+ 	{"GetErrorString",		MacOS_GetErrorString,	1,	geterr_doc},
+@@ -594,6 +600,7 @@
+ 	{"GetTicks",			MacOS_GetTicks,		1,	GetTicks_doc},
+ 	{"SysBeep",			MacOS_SysBeep,		1,	SysBeep_doc},
+ 	{"WMAvailable",			MacOS_WMAvailable,		1,	WMAvailable_doc},
++#endif
+ 	{NULL,				NULL}		 /* Sentinel */
+ };
+ 
+Index: Mac/Modules/gestaltmodule.c
+===================================================================
+--- Mac/Modules/gestaltmodule.c	(revision 75235)
++++ Mac/Modules/gestaltmodule.c	(working copy)
+@@ -34,7 +34,7 @@
+ {
+ 	OSErr iErr;
+ 	OSType selector;
+-	long response;
++    SInt32 response;
+ 	if (!PyArg_ParseTuple(args, "O&", PyMac_GetOSType, &selector))
+ 		return NULL;
+ 	iErr = Gestalt ( selector, &response );
